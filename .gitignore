@@ -1,7 +1,7 @@
-!filewatcher.inc
 *.bat
 *.exe
 *.sh
 *.smx
 include/*
+!filewatcher.inc
 spcomp*
