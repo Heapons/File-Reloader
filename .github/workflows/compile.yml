@@ -32,11 +32,11 @@ jobs:
         uses: rumblefrog/setup-sp@master
         with:
           version: '1.13.x'
-          version-file: ./file_reloader.sp
+          version-file: ./filereload.sp
 
       - name: Compile plugins
         run: |
-          for file in file_reloader.sp
+          for file in filereload.sp
           do
             echo -e "\nCompiling $file..."
             spcomp -E -w234 -O2 -v2 -i include $file
@@ -49,17 +49,17 @@ jobs:
       - name: Move smx to plugins directory
         run: |
           mkdir -p plugins
-          mv file_reloader.smx plugins/
+          mv filereload.smx plugins/
 
       - name: Create scripting directory and move source code
         run: |
-          mkdir -p scripting/file_reloader
-          mv file_reloader.sp scripting/
+          mkdir -p scripting/filereload
+          mv filereload.sp scripting/
 
       - name: Extract plugin version
         id: get_version
         run: |
-          version=$(grep 'PLUGIN_VERSION' file_reloader.sp | head -n1 | sed 's/.*"\(.*\)".*/\1/')
+          version=$(grep 'PLUGIN_VERSION' filereload.sp | head -n1 | sed 's/.*"\(.*\)".*/\1/')
           echo "PLUGIN_VERSION=$version" >> $GITHUB_ENV
 
       - name: Upload artifact
@@ -67,5 +67,5 @@ jobs:
         with:
           name: "File Reloader ${{ env.PLUGIN_VERSION }}"
           path: |
-            plugins/file_reloader.smx
-            scripting/file_reloader.sp
+            plugins/filereload.smx
+            scripting/filereload.sp
