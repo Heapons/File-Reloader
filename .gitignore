@@ -1,0 +1,5 @@
+!filewatcher.inc
+*.smx
+compile*
+include/*
+spcomp*
