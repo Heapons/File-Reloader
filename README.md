@@ -56,22 +56,15 @@ This plugin automatically executes the right commands on your behalf whenever yo
 |-|-|
 |Edit `databases.cfg`|`sm_reload_databases`|
 
-<<<<<<< HEAD
 ## Bot Navigations
-=======
 ## Navigation Meshes
->>>>>>> 25627d1a251bba6c3c3dbf86d0198e92d3372a2f
 > [!NOTE]
 > This will only attempt to reload the current map. Changes to unrelated maps will be ignored.
 ### Navigation Meshes
 |Action|Executed Command|
 |-|-|
-<<<<<<< HEAD
 |Update `<mapname>.nav`|`sm_votemap <mapname>`|
 ### [RCBot2](https://github.com/APGRoboCop/rcbot2)
 |Action|Executed Command|
 |-|-|
 |Update `<mapname>.rcw`|`sm_votemap <mapname>`|
-=======
-|Add/Overwrite `<mapname>.nav`|`sm_map <mapname>`|
->>>>>>> 25627d1a251bba6c3c3dbf86d0198e92d3372a2f
