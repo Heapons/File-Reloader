@@ -3,32 +3,33 @@ This plugin automatically executes the right commands on your behalf whenever yo
 > [!WARNING]
 > Requires [FileWatcher](https://github.com/KitRifty/SM-FileWatcher/releases) extension!
 
-## How to install?
+# How to install?
 - Go to [GitHub Actions](https://github.com/Heapons/File-Reloader/actions/workflows/compile.yml).
 - Click on the latest workflow (with a ✅ next to its name).
 - Scroll down to the `Artifacts` section, and download the plugin from there.
 > [!NOTE]
 > If the latest workflow has expired, click on `Run workflow`.
 
-## Features
-### ConVars
+# Features
+## ConVars
 |Name|Description|
 |-|-|
 |`filereload_enabled`|Toggle the plugin.|
-|`filereload_configs`|Should cfg files be automatically updated?|
-|`filereload_plugins`|Should plugins be automatically updated?|
-|`filereload_admins`|Should admin settings be automatically updated?|
-|`filereload_translations`|Should translations be automatically updated?|
-|`filereload_databases`|Should databases.cfg be automatically updated?|
-|`filereload_navmeshes`|Should nav meshes be automatically updated?|
+|`filereload_configs`|Automatically update cfg files.|
+|`filereload_plugins`|Automatically update plugins.|
+|`filereload_admins`|Automatically update admin settings.|
+|`filereload_translations`|Automatically update translations.|
+|`filereload_databases`|Automatically update databases.cfg.|
+|`filereload_navmeshes`|Automatically update nav meshes.|
+|`filereload_waypoints`|Automatically update waypoints.<br>**⚠** Requires [RCBot2](https://github.com/APGRoboCop/rcbot2)‼</br>|
 |`filereload_version`|File Reloader version.|
 
-### Valve Configs
+## Valve Configs
 |Action|Executed Command|
 |-|-|
-|Update `<filename>.cfg`|`exec <filename>`|
+|Edit `<filename>.cfg`|`exec <filename>`|
 
-### Plugins
+## Plugins
 > [!NOTE]
 > This also accounts for `addons/sourcemod/plugins/disabled/`.
 
@@ -39,26 +40,30 @@ This plugin automatically executes the right commands on your behalf whenever yo
 |Delete `<filename>.smx`<br>Move `<filename>.smx` in `disabled` folder</br>|`sm plugins unload <filename>`|
 |Rename/Move `<filename>.smx` |`sm plugins unload <oldpath>`<br>`sm plugins load <newpath>`</br>|
 
-### Admins
+## Admins
 |Action|Executed Command|
 |-|-|
-|Update `admins.cfg`, `admins_simple.ini`, or `admin_groups.cfg`|`sm_reloadadmins`|
-|Update `adminmenu_*.txt`|`sm plugins reload adminmenu.smx`|
+|Edit `admins.cfg`, `admins_simple.ini`, or `admin_groups.cfg`|`sm_reloadadmins`|
+|Edit `adminmenu_*.txt`|`sm plugins reload adminmenu.smx`|
 
-### Translations
+## Translations
 |Action|Executed Command|
 |-|-|
 |Any|`sm_reload_translations`|
 
-### Databases
+## Databases
 |Action|Executed Command|
 |-|-|
-|Update `databases.cfg`|`sm_reload_databases`|
+|Edit `databases.cfg`|`sm_reload_databases`|
 
-### Navigation Meshes
+## Bot Navigations
 > [!NOTE]
 > This will only attempt to reload the current map. Changes to unrelated maps will be ignored.
-
+### Navigation Meshes
 |Action|Executed Command|
 |-|-|
-|Add/Overwrite `<mapname>.nav`|`sm_map <mapname>`|
+|Update `<mapname>.nav`|`sm_votemap <mapname>`|
+### [RCBot2](https://github.com/APGRoboCop/rcbot2)
+|Action|Executed Command|
+|-|-|
+|Update `<mapname>.rcw`|`sm_votemap <mapname>`|

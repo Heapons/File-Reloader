@@ -9,17 +9,22 @@ ConVar            g_cvarPluginEnabled,
                   g_cvarWatchAdmins,
                   g_cvarWatchTranslations,
                   g_cvarWatchDatabases,
-                  g_cvarWatchNavMeshes;
+                  g_cvarWatchNavMeshes,
+                  g_cvarWatchWaypoints;
 
 FileSystemWatcher g_cfgWatcher,
                   g_pluginsWatcher,
                   g_adminsWatcher,
                   g_databasesWatcher,
                   g_translationsWatcher,
-                  g_navWatcher;
+                  g_mapsWatcher,
+                  g_waypointsWatcher;
 
 char g_mapName[PLATFORM_MAX_PATH],
-     g_navFile[PLATFORM_MAX_PATH];
+     g_navFile[PLATFORM_MAX_PATH],
+     g_rcwFile[PLATFORM_MAX_PATH],
+     g_rcwPath[PLATFORM_MAX_PATH],
+     g_modName[PLATFORM_MAX_PATH];
 
 bool isMapReloading;
 
@@ -56,6 +61,9 @@ public void OnPluginStart()
     HookConVarChange(g_cvarWatchDatabases, OnConVarChange);
     g_cvarWatchNavMeshes = CreateConVar("filereload_navmeshes", "1", "Automatically update nav meshes.", FCVAR_REPLICATED);
     HookConVarChange(g_cvarWatchNavMeshes, OnConVarChange);
+    g_cvarWatchWaypoints = CreateConVar("filereload_waypoints", "1", "Automatically update waypoints (Requires RCBot2!!).", FCVAR_REPLICATED);
+    HookConVarChange(g_cvarWatchWaypoints, OnConVarChange);
+
 
     AutoExecConfig(true, "filereload");
 
@@ -101,11 +109,20 @@ public void OnPluginStart()
     g_translationsWatcher.OnDeleted = OnTranslationsUpdated;
 
     // Navigation Meshes
-    g_navWatcher = new FileSystemWatcher("maps");
-    g_navWatcher.IncludeSubdirectories = false;
-    g_navWatcher.NotifyFilter = FSW_NOTIFY_MODIFIED | FSW_NOTIFY_CREATED;
-    g_navWatcher.OnModified = OnNavMeshModified;
-    g_navWatcher.OnCreated = OnNavMeshCreated;
+    g_mapsWatcher = new FileSystemWatcher("maps");
+    g_mapsWatcher.IncludeSubdirectories = false;
+    g_mapsWatcher.NotifyFilter = FSW_NOTIFY_MODIFIED | FSW_NOTIFY_CREATED;
+    g_mapsWatcher.OnModified = OnNavMeshModified;
+    g_mapsWatcher.OnCreated = OnNavMeshCreated;
+
+    // [RCBot2] Waypoints
+    GetGameFolderName(g_modName, sizeof(g_modName));
+    Format(g_rcwPath, sizeof(g_rcwPath), "addons/rcbot2/waypoints/%s", g_modName);
+    g_waypointsWatcher = new FileSystemWatcher(g_rcwPath);
+    g_waypointsWatcher.IncludeSubdirectories = false;
+    g_waypointsWatcher.NotifyFilter = FSW_NOTIFY_MODIFIED | FSW_NOTIFY_CREATED;
+    g_waypointsWatcher.OnModified = OnWaypointsModified;
+    g_waypointsWatcher.OnCreated = OnWaypointsCreated;
 }
 
 public void OnConfigsExecuted()
@@ -120,7 +137,9 @@ public void OnConfigsExecuted()
 
     g_translationsWatcher.IsWatching = g_cvarWatchTranslations.BoolValue && g_cvarPluginEnabled.BoolValue;
 
-    g_navWatcher.IsWatching = g_cvarWatchNavMeshes.BoolValue && g_cvarPluginEnabled.BoolValue;
+    g_mapsWatcher.IsWatching = g_cvarWatchNavMeshes.BoolValue && g_cvarPluginEnabled.BoolValue;
+
+    g_waypointsWatcher.IsWatching = g_cvarWatchWaypoints.BoolValue && g_cvarPluginEnabled.BoolValue;
 }
 
 static void OnConVarChange(ConVar cvar, const char[] oldValue, const char[] newValue)
@@ -130,7 +149,7 @@ static void OnConVarChange(ConVar cvar, const char[] oldValue, const char[] newV
 
 static void OnCfgModified(FileSystemWatcher fsw, const char[] path)
 {
-    if (StrContains(path, ".cfg", false) != -1)
+    if (StrContains(path, ".cfg") != -1)
     {
         ServerCommand("exec \"%s\"", path);
         CPrintToAdmins("[%s%s{default}] Executed {green}%s{default}!", PLUGIN_COLOR, PLUGIN_NAME, path);
@@ -227,7 +246,7 @@ static void OnNavMeshModified(FileSystemWatcher fsw, const char[] path)
 
     if (StrContains(path, g_navFile, false) != -1)
     {
-        ReloadMap(g_mapName, true);
+        ReloadMap(g_mapName);
         isMapReloading = true;
     }
 }
@@ -244,17 +263,40 @@ static void OnNavMeshCreated(FileSystemWatcher fsw, const char[] path)
     }
 }
 
+static void OnWaypointsModified(FileSystemWatcher fsw, const char[] path)
+{
+    GetCurrentMap(g_mapName, sizeof(g_mapName));
+    Format(g_rcwFile, sizeof(g_rcwFile), "%s.rcw", g_mapName);
+
+    if (StrEqual(path, g_rcwFile, false))
+    {
+        ReloadMap(g_mapName);
+        isMapReloading = true;
+    }
+}
+
+static void OnWaypointsCreated(FileSystemWatcher fsw, const char[] path)
+{
+    GetCurrentMap(g_mapName, sizeof(g_mapName));
+    Format(g_rcwFile, sizeof(g_rcwFile), "%s.rcw", g_mapName);
+
+    if (StrEqual(path, g_rcwFile, false))
+    {
+        ReloadMap(g_mapName);
+        isMapReloading = true;
+    }
+}
+
 /**
  * Reload the map forcefully or via a vote.
  * 
  * @param mapName  Name of the map
- * @param callvote Whether to call a vote or not (i.e. forcefully)
  */
-stock void ReloadMap(const char[] mapName, bool callvote=false)
+stock void ReloadMap(const char[] mapName)
 {
     if (isMapReloading) return;
-    ServerCommand("sm_%s %s", callvote ? "votemap" : "map", mapName);
-    CPrintToAdmins("[%s%s{default}] The nav meshes have been updated. Reload map%s", PLUGIN_COLOR, PLUGIN_NAME, callvote ? "?" : "...");
+    ServerCommand("sm_%s %s", GetClientCount() > 0 ? "votemap" : "map", mapName);
+    CPrintToChatAll("[%s%s{default}] The bot navigations have been updated. Reload map?", PLUGIN_COLOR, PLUGIN_NAME);
 }
 
 /**
