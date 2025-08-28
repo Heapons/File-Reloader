@@ -57,7 +57,6 @@ This plugin automatically executes the right commands on your behalf whenever yo
 |Edit `databases.cfg`|`sm_reload_databases`|
 
 ## Bot Navigations
-## Navigation Meshes
 > [!NOTE]
 > This will only attempt to reload the current map. Changes to unrelated maps will be ignored.
 ### Navigation Meshes
